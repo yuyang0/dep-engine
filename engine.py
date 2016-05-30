@@ -57,6 +57,10 @@ class VarOp(object):
         self.op.execute()
 
 
+class ReadSeq(list):
+    pass
+
+
 class Var(object):
     _IDX = 0
 
@@ -80,13 +84,13 @@ class Var(object):
                 op.dec_wait()
                 return
             else:
-                self.queue.append([var_op, ])
+                self.queue.append(ReadSeq([var_op, ]))
         else:
             last = self.queue[-1]
-            if isinstance(last, list):
+            if isinstance(last, ReadSeq):
                 last.append(var_op)
             else:
-                self.queue.append([var_op, ])
+                self.queue.append(ReadSeq([var_op, ]))
 
     def append_write(self, op):
         if len(self.queue) == 0 and \
@@ -107,7 +111,7 @@ class Var(object):
         if len(self.queue) == 0:
             return
         first = self.queue[0]
-        if isinstance(first, list):
+        if isinstance(first, ReadSeq):
             for var_op in first:
                 self.num_pending_read += 1
                 if var_op.dec_wait() == 0:
@@ -128,7 +132,7 @@ class Var(object):
         if len(self.queue) == 0:
             return
         first = self.queue[0]
-        if isinstance(first, list):
+        if isinstance(first, ReadSeq):
             for var_op in first:
                 self.num_pending_read += 1
                 if var_op.dec_wait() == 0:
